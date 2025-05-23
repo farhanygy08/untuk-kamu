@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pesan Anonim</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #121212;
+      color: #f0f0f0;
+      font-family: 'Poppins', sans-serif;
+      padding: 30px;
+    }
+    h1, h2 {
+      color: #ffca28;
+      text-align: center;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #1e1e1e;
+      color: #f0f0f0;
+      font-size: 16px;
+      resize: none;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #ffca28;
+      color: #121212;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #ffa000;
+    }
+    #daftarPesan div {
+      background: #1e1e1e;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      animation: fadeIn 0.4s ease forwards;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    #footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 14px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pesan Anonim</h1>
+  <textarea id="pesanInput" placeholder="Tulis pesan rahasiamu di sini..."></textarea>
+  <button onclick="kirimPesan()">Kirim Pesan</button>
+
+  <h2>Pesan Masuk</h2>
+  <div id="daftarPesan"></div>
+
+  <div id="footer">Dibuat dengan hati oleh seseorang</div>
+
+  <script src="script.js"></script>
+</body>
+</html>
