@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pesan Rahasia ✨</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --bg: #ffffff;
+            --text: #333333;
+            --card: #f8f9fa;
+            --border: #e0e0e0;
+        }
+        .dark-mode {
+            --primary: #a29bfe;
+            --bg: #121212;
+            --text: #f5f5f5;
+            --card: #1e1e1e;
+            --border: #333333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s;
+        }
+        .container {
+            background: var(--card);
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            padding: 25px;
+            margin: 20px auto;
+            border: 1px solid var(--border);
+        }
+        h1 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 15px;
+            background: var(--bg);
+            color: var(--text);
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .message-card {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+            word-break: break-word;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.5s forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        .copy-link {
+            display: flex;
+            margin: 15px 0;
+        }
+        #user-link {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px 0 0 8px;
+            background: var(--bg);
+            color: var(--text);
+        }
+        #copy-btn {
+            border-radius: 0 8px 8px 0;
+            padding: 10px 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="page-title">✉️ Pesan Rahasia</h1>
+        
+        <!-- Password Section -->
+        <div id="password-section">
+            <p>Masukkan password untuk melihat pesan Anda:</p>
+            <input type="password" id="password-input" placeholder="Password Anda" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border);" />
+            <button onclick="checkPassword()">Masuk</button>
+            <p>Belum punya password? <a href="#" onclick="generateNewLink()">Buat link baru</a></p>
+        </div>
+        
+        <!-- Main App (Hidden Initially) -->
+        <div id="app" class="hidden">
+            <!-- Share Link Section -->
+            <div id="share-section">
+                <p>Bagikan link ini ke teman-temanmu:</p>
+                <div class="copy-link">
+                    <input type="text" id="user-link" readonly />
+                    <button id="copy-btn" onclick="copyLink()">Salin</button>
+                </div>
+            </div>
+            
+            <!-- Send Message Form -->
+            <div id="send-form">
+                <textarea id="message" placeholder="Tulis pesan rahasia di sini..."></textarea>
+                <button onclick="sendMessage()">Kirim Pesan</button>
+            </div>
+
+            <!-- Received Messages -->
+            <div id="messages-section">
+                <h2>📬 Pesan Untuk Kamu</h2>
+                <div id="messages-list"></div>
+            </div>
+        </div>
+        
+        <!-- New Link Generator -->
+        <div id="new-link-section" class="hidden">
+            <h2>🔗 Link Baru Dibuat!</h2>
+            <p>Simpan password ini dengan aman:</p>
+            <div class="message-card" id="new-password"></div>
+            <p>Bagikan link ini ke teman-temanmu:</p>
+            <div class="copy-link">
+                <input type="text" id="new-user-link" readonly />
+                <button onclick="copyNewLink()">Salin</button>
+            </div>
+            <button onclick="location.reload()">Mulai Menggunakan</button>
+        </div>
+    </div>
+
+    <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
+
+    <script>
+        // Firebase Configuration (Hardcoded for Acode)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD9ogFTT7FmepZaGvFajWvJR50eWWHXL0E",
+            authDomain: "pesan-anonim-saya.firebaseapp.com",
+            databaseURL: "https://pesan-anonim-saya-default-rtdb.firebaseio.com",
+            projectId: "pesan-anonim-saya",
+            storageBucket: "pesan-anonim-saya.firebasestorage.app",
+            messagingSenderId: "738997578466",
+            appId: "1:738997578466:web:9b4ce2fa81e22023e94cbb",
+            measurementId: "G-0ZQY0HY46N"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Generate unique ID from URL
+        function getUserIdFromUrl() {
+            const path = window.location.pathname.split('/');
+            return path[path.length - 1] || null;
+        }
+
+        // Check if password is correct
+        function checkPassword() {
+            const password = document.getElementById('password-input').value;
+            const userId = getUserIdFromUrl();
+            
+            if (!userId) {
+                alert("Link tidak valid");
+                return;
+            }
+            
+            database.ref('users/' + userId).once('value').then((snapshot) => {
+                const userData = snapshot.val();
+                if (userData && userData.password === password) {
+                    // Password correct
+                    document.getElementById('password-section').classList.add('hidden');
+                    document.getElementById('app').classList.remove('hidden');
+                    document.getElementById('user-link').value = window.location.origin + '/' + userId;
+                    loadMessages(userId);
+                    
+                    // Listen for new messages
+                    database.ref('messages/' + userId).on('child_added', (data) => {
+                        showNotification("Pesan baru diterima!");
+                        loadMessages(userId);
+                    });
+                } else {
+                    alert("Password salah!");
+                }
+            });
+        }
+
+        // Load messages from Firebase
+        function loadMessages(userId) {
+            const messagesList = document.getElementById('messages-list');
+            messagesList.innerHTML = '<p>Memuat pesan...</p>';
+            
+            database.ref('messages/' + userId).once('value').then((snapshot) => {
+                const messages = snapshot.val();
+                messagesList.innerHTML = '';
+                
+                if (!messages) {
+                    messagesList.innerHTML = '<p>Belum ada pesan untukmu 😢</p>';
+                    return;
+                }
+                
+                Object.keys(messages).forEach(key => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message-card';
+                    messageDiv.innerHTML = `
+                        <p>${messages[key].text}</p>
+                        <small>${new Date(messages[key].timestamp).toLocaleString()}</small>
+                        <div style="margin-top: 10px;">
+                            <textarea id="reply-${key}" placeholder="Balas pesan ini..." style="width: 100%; margin-top: 5px;"></textarea>
+                            <button onclick="sendReply('${userId}', '${key}')">Kirim Balasan</button>
+                        </div>
+                    `;
+                    messagesList.appendChild(messageDiv);
+                });
+            });
+        }
+
+        // Send new message
+        function
